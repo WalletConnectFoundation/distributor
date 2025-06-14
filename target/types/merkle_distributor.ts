@@ -762,6 +762,13 @@ export type MerkleDistributor = {
         "kind": "struct",
         "fields": [
           {
+            "name": "admin",
+            "docs": [
+              "admin of merkle tree, store for for testing purpose"
+            ],
+            "type": "publicKey"
+          },
+          {
             "name": "distributor",
             "docs": [
               "distributor"
@@ -797,18 +804,37 @@ export type MerkleDistributor = {
             "type": "u64"
           },
           {
+            "name": "bonusAmount",
+            "docs": [
+              "Bonus amount"
+            ],
+            "type": "u64"
+          },
+          {
             "name": "closable",
             "docs": [
               "indicate that whether admin can close this account, for testing purpose"
             ],
-            "type": "bool"
+            "type": "u8"
           },
           {
-            "name": "admin",
+            "name": "padding0",
             "docs": [
-              "admin of merkle tree, store for for testing purpose"
+              "padding 0"
             ],
-            "type": "publicKey"
+            "type": {
+              "array": [
+                "u8",
+                7
+              ]
+            }
+          },
+          {
+            "name": "padding1",
+            "docs": [
+              "padding 1"
+            ],
+            "type": "u128"
           }
         ]
       }
@@ -996,6 +1022,15 @@ export type MerkleDistributor = {
             "name": "airdropBonus",
             "type": {
               "defined": "AirdropBonus"
+            }
+          },
+          {
+            "name": "padding2",
+            "type": {
+              "array": [
+                "u128",
+                5
+              ]
             }
           }
         ]
@@ -1304,7 +1339,7 @@ export type MerkleDistributor = {
     {
       "code": 6025,
       "name": "SameOperator",
-      "msg": "same operator"
+      "msg": "Same operator"
     },
     {
       "code": 6026,
@@ -2083,6 +2118,13 @@ export const IDL: MerkleDistributor = {
         "kind": "struct",
         "fields": [
           {
+            "name": "admin",
+            "docs": [
+              "admin of merkle tree, store for for testing purpose"
+            ],
+            "type": "publicKey"
+          },
+          {
             "name": "distributor",
             "docs": [
               "distributor"
@@ -2118,18 +2160,37 @@ export const IDL: MerkleDistributor = {
             "type": "u64"
           },
           {
+            "name": "bonusAmount",
+            "docs": [
+              "Bonus amount"
+            ],
+            "type": "u64"
+          },
+          {
             "name": "closable",
             "docs": [
               "indicate that whether admin can close this account, for testing purpose"
             ],
-            "type": "bool"
+            "type": "u8"
           },
           {
-            "name": "admin",
+            "name": "padding0",
             "docs": [
-              "admin of merkle tree, store for for testing purpose"
+              "padding 0"
             ],
-            "type": "publicKey"
+            "type": {
+              "array": [
+                "u8",
+                7
+              ]
+            }
+          },
+          {
+            "name": "padding1",
+            "docs": [
+              "padding 1"
+            ],
+            "type": "u128"
           }
         ]
       }
@@ -2317,6 +2378,15 @@ export const IDL: MerkleDistributor = {
             "name": "airdropBonus",
             "type": {
               "defined": "AirdropBonus"
+            }
+          },
+          {
+            "name": "padding2",
+            "type": {
+              "array": [
+                "u128",
+                5
+              ]
             }
           }
         ]
@@ -2625,7 +2695,7 @@ export const IDL: MerkleDistributor = {
     {
       "code": 6025,
       "name": "SameOperator",
-      "msg": "same operator"
+      "msg": "Same operator"
     },
     {
       "code": 6026,

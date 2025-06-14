@@ -17,7 +17,7 @@ wallet = "keys/localnet/admin-bossj3JvwiNK7pvjr149DqdtJxf2gdygbcmEPTkb2F1.json"
 merkle_distributor = "DiS3nNjFVMieMgmiQFm6wgJL7nevk4NrhXKLbtEH1Z2R"
 
 [programs.devnet]
-merkle_distributor = "DiS3nNjFVMieMgmiQFm6wgJL7nevk4NrhXKLbtEH1Z2R"
+merkle_distributor = "BZuXaMhhTG4cpHkgUHzz6pKhQrV4jdpZjmF5M3zi2HQy"
 
 [programs.testnet]
 merkle_distributor = "DiS3nNjFVMieMgmiQFm6wgJL7nevk4NrhXKLbtEH1Z2R"

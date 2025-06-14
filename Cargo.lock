@@ -2261,6 +2261,7 @@ dependencies = [
  "anchor-spl",
  "anyhow",
  "bincode",
+ "bs58 0.4.0",
  "clap 3.2.25",
  "csv",
  "jito-merkle-tree",

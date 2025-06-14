@@ -1,0 +1,19 @@
+{
+  "name": "Jupiter Merkle Distributor",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "options": ["--platform=linux/amd64"]
+  },
+  "runArgs": [
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges",
+    "--platform=linux/amd64"
+  ],
+  "remoteUser": "vscode",
+  "forwardPorts": [8899],
+  "customizations": {
+    "vscode": {
+      "extensions": ["rust-lang.rust-analyzer", "tamasfe.even-better-toml"]
+    }
+  }
+}

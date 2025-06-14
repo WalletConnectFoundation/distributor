@@ -141,3 +141,10 @@ __pycache__/
 
 src/idls/
 data/distributor-info.json
+
+# Generated files from deployment guide
+/keys/*-devnet.json
+/token_mint.txt
+/recipients_*.csv
+/merkle_trees_devnet/
+*_private_keys.txt

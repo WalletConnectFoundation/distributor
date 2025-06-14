@@ -1,0 +1,17 @@
+node_modules
+target
+.git
+.anchor
+.vscode
+*.log
+.env
+.env.*
+.DS_Store
+coverage
+*.tmp
+*.temp
+.cache
+dist
+build
+*.zip
+*.tar.gz 

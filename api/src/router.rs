@@ -10,6 +10,7 @@ use axum::{
     body::Body,
     error_handling::HandleErrorLayer,
     extract::{Path, State},
+    http::HeaderMap,
     response::IntoResponse,
     routing::get,
     Json, Router,
@@ -98,7 +99,10 @@ async fn get_user_info(
             .ok_or(ApiError::ProofNotFound(user_pubkey.to_string()))?,
     };
 
-    Ok(Json(proof))
+    let mut headers = HeaderMap::new();
+    headers.insert("Access-Control-Allow-Origin", "*".parse().unwrap());
+    
+    Ok((headers, Json(proof)))
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -118,7 +122,10 @@ pub struct Distributors {
 }
 
 async fn get_distributors(State(state): State<Arc<RouterState>>) -> Result<impl IntoResponse> {
-    Ok(Json(state.distributors.clone()))
+    let mut headers = HeaderMap::new();
+    headers.insert("Access-Control-Allow-Origin", "*".parse().unwrap());
+    
+    Ok((headers, Json(state.distributors.clone())))
 }
 
 async fn root() -> impl IntoResponse {
