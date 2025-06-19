@@ -3,87 +3,83 @@
 # Build args
 #
 ################################################################################
-ARG                 base="rust:bookworm"
-ARG                 runtime="debian:bookworm-slim"
-ARG                 bin="jupiter-airdrop-api"
-ARG                 version="unknown"
-ARG                 sha="unknown"
-ARG                 maintainer="WalletConnect Foundation"
-ARG                 release=""
+ARG                 BASE="rust:1.87-bullseye"
+ARG                 RUNTIME="debian:bullseye-slim"
+ARG                 VERSION="unknown"
+ARG                 SHA="unknown"
+ARG                 MAINTAINER="WalletConnect Foundation"
+ARG                 PROFILE="release"
+ARG                 LOG_LEVEL="debug"
 ARG                 WORK_DIR="/app"
 
 ################################################################################
 #
-# Install cargo-chef
+# Parameters for release builds
 #
 ################################################################################
-FROM                ${base} AS chef
-
-WORKDIR             ${WORK_DIR}
-RUN                 cargo install cargo-chef --locked
+FROM                ${BASE} AS build-release
+ENV                 BUILD_SHARED_ARGS="--profile release"
+ENV                 BUILD_PROFILE_DIR="release"
 
 ################################################################################
 #
-# Generate recipe file
+# Parameters for debug builds
 #
 ################################################################################
-FROM                chef AS plan
-
-WORKDIR             /app
-COPY                Cargo.lock Cargo.toml ./
-COPY                src ./api/src
-RUN                 cargo chef prepare --recipe-path recipe.json
+FROM                ${BASE} AS build-debug
+ENV                 BUILD_SHARED_ARGS=""
+ENV                 BUILD_PROFILE_DIR="debug"
 
 ################################################################################
 #
 # Build the binary
 #
 ################################################################################
-FROM                chef AS build
+FROM                build-${PROFILE} AS build
 
-ARG                 release
-ARG                 PROFILE="release-debug"
-ARG                 BUILD_PROFILE="--profile ${PROFILE}"
+ARG                 LOG_LEVEL
+ARG                 WORK_DIR
 
-WORKDIR             /app
-# Cache dependancies
-RUN                 cargo chef cook ${BUILD_PROFILE} --recipe-path recipe.json 
+RUN                 apt-get update && apt-get install -y --no-install-recommends clang
+
+WORKDIR             ${WORK_DIR}
+
 # Build the local binary
 COPY                . .
-RUN                 cargo build --bin api ${RELEASE}
+RUN                 cargo build --bin jupiter-airdrop-api ${BUILD_SHARED_ARGS}
+
+RUN                 ln -s ${WORK_DIR}/target/${BUILD_PROFILE_DIR} ${WORK_DIR}/target/out
 
 ################################################################################
 #
 # Runtime image
 #
 ################################################################################
-FROM                ${runtime} AS runtime
+FROM                ${RUNTIME} AS runtime
 
-ARG                 bin
-ARG                 version
-ARG                 sha
-ARG                 maintainer
-ARG                 release
-ARG                 binpath=${release:+release}
-ARG                 WORK_DIR 
+ARG                 VERSION
+ARG                 SHA
+ARG                 MAINTAINER
+ARG                 WORK_DIR
+ARG                 LOG_LEVEL
 
-LABEL               version=${version}
-LABEL               sha=${sha}
-LABEL               maintainer=${maintainer}
+LABEL               version=${VERSION}
+LABEL               sha=${SHA}
+LABEL               maintainer=${MAINTAINER}
 
-ENV                 RPC_PROXY_HOST=0.0.0.0
-
-WORKDIR             /app
-COPY --from=build   /app/target/${binpath:-debug}/jupiter-airdrop-api /usr/local/bin/jupiter-airdrop-api
 RUN                 apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates libssl-dev curl \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+  && apt-get install -y --no-install-recommends ca-certificates libssl-dev curl \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
-# Enable writing files to the work dir.
-RUN                 chown -R 1001:1001 ${WORK_DIR}
-RUN                 chmod 755 ${WORK_DIR}
+WORKDIR             ${WORK_DIR}
 
-USER                1001:1001
-EXPOSE              3000/tcp
+COPY --from=build   ${WORK_DIR}/target/out/jupiter-airdrop-api /usr/local/bin/jupiter-airdrop-api 
+
+# Preset the `LOG_LEVEL` env var based on the global log level.
+ENV                 LOG_LEVEL="${LOG_LEVEL}"
+
+RUN                 mkdir /jupiter-airdrop-api && chown 7001:7001 /jupiter-airdrop-api
+
+USER                7001:7001
 ENTRYPOINT          ["/usr/local/bin/jupiter-airdrop-api"]
