@@ -10,7 +10,6 @@ use axum::{
     body::Body,
     error_handling::HandleErrorLayer,
     extract::{Path, State},
-    http::HeaderMap,
     response::IntoResponse,
     routing::get,
     Json, Router,
@@ -25,6 +24,7 @@ use tower::{
     ServiceBuilder,
 };
 use tower_http::{
+    cors::CorsLayer,
     trace::{DefaultOnResponse, TraceLayer},
     LatencyUnit,
 };
@@ -49,12 +49,21 @@ impl Debug for RouterState {
 
 #[instrument]
 pub fn get_routes(state: Arc<RouterState>) -> Router {
-    let middleware = ServiceBuilder::new()
-        .layer(HandleErrorLayer::new(error::handle_error))
-        .layer(BufferLayer::new(10000))
-        .layer(RateLimitLayer::new(10000, Duration::from_secs(1)))
-        .layer(TimeoutLayer::new(Duration::from_secs(20)))
-        .layer(LoadShedLayer::new())
+    let router = Router::new()
+        .route("/", get(root))
+        .route("/distributors", get(get_distributors))
+        .route("/user/:user_pubkey", get(get_user_info));
+
+    router
+        .layer(
+            ServiceBuilder::new()
+                .layer(HandleErrorLayer::new(error::handle_error))
+                .layer(BufferLayer::new(10000))
+                .layer(RateLimitLayer::new(10000, Duration::from_secs(1)))
+                .layer(TimeoutLayer::new(Duration::from_secs(20)))
+                .layer(LoadShedLayer::new())
+        )
+        .layer(CorsLayer::permissive()) // CORS layer applied directly to router
         .layer(
             TraceLayer::new_for_http()
                 .on_request(|request: &Request<Body>, _span: &Span| {
@@ -65,14 +74,8 @@ pub fn get_routes(state: Arc<RouterState>) -> Router {
                         .level(tracing_core::Level::ERROR)
                         .latency_unit(LatencyUnit::Millis),
                 ),
-        );
-
-    let router = Router::new()
-        .route("/", get(root))
-        .route("/distributors", get(get_distributors))
-        .route("/user/:user_pubkey", get(get_user_info));
-
-    router.layer(middleware).with_state(state)
+        )
+        .with_state(state)
 }
 
 /// Retrieve the proof for a given user
@@ -98,11 +101,8 @@ async fn get_user_info(
             .to_owned()
             .ok_or(ApiError::ProofNotFound(user_pubkey.to_string()))?,
     };
-
-    let mut headers = HeaderMap::new();
-    headers.insert("Access-Control-Allow-Origin", "*".parse().unwrap());
     
-    Ok((headers, Json(proof)))
+    Ok(Json(proof))
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -122,10 +122,7 @@ pub struct Distributors {
 }
 
 async fn get_distributors(State(state): State<Arc<RouterState>>) -> Result<impl IntoResponse> {
-    let mut headers = HeaderMap::new();
-    headers.insert("Access-Control-Allow-Origin", "*".parse().unwrap());
-    
-    Ok((headers, Json(state.distributors.clone())))
+    Ok(Json(state.distributors.clone()))
 }
 
 async fn root() -> impl IntoResponse {
