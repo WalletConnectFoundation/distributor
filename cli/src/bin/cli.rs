@@ -126,6 +126,8 @@ pub enum Commands {
 
     ViewDistributors(ViewDistributorsArgs),
     ViewDistributorByPubkey(ViewDistributorByPubkeyArgs),
+    /// Upload merkle tree to PostgreSQL database
+    UploadMerkleTree(UploadMerkleTreeArgs),
 }
 
 #[derive(Parser, Debug)]
@@ -569,6 +571,18 @@ fn main() {
         }
         Commands::SetClawbackReceiver(set_clawback_receiver_argrs) => {
             process_set_clawback_receiver(&args, set_clawback_receiver_argrs)
+        }
+        Commands::UploadMerkleTree(upload_args) => {
+            // Create a new args struct with the required parameters from the main Args
+            let mut enhanced_upload_args = upload_args.clone();
+            enhanced_upload_args.program_id = args.program_id;
+            enhanced_upload_args.base = args.base;
+            enhanced_upload_args.mint = args.mint;
+            
+            if let Err(e) = process_upload_merkle_tree_sync(&enhanced_upload_args) {
+                eprintln!("Error uploading merkle tree: {}", e);
+                std::process::exit(1);
+            }
         }
     }
 }

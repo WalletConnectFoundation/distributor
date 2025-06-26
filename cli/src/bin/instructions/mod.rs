@@ -46,3 +46,5 @@ pub mod view_distributor;
 pub use view_distributor::*;
 pub mod process_claim_from_api;
 pub use process_claim_from_api::*;
+pub mod upload_merkle_tree;
+pub use upload_merkle_tree::*;
